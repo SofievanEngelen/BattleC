@@ -1,0 +1,42 @@
+GridSpace:
+- Attributes
+    - X: char (A-J)
+    - Y: int (1-10)
+    - Contains_ship: Ship = None
+    - Hit: bool = False
+- methods
+    - hit()
+        - Hit = True
+        - if contains_ship:
+            ship.check_sunk()
+            return True
+        - return False
+
+Ship
+- Attributes
+    - Ship_length: int
+    - Name: str
+    - Sunk:
+    - Location: vector[GridSpace]
+- Methods
+    - place(spaces: List[GridSpace])
+        - Check if location is available
+        - Set contains_ship of all GridSpaces to true
+    - check_sunk():
+        - check if all GridSpaces in ship are hit
+            - yes: print("Sunk ship {name}!)
+            - no: continue
+
+Board
+- Attributes
+    - Num_rows: int
+    - Num_cols: int
+    - Grid: 2D array
+        - Consists of 10x10 grid spaces
+- Methods
+    - Create_grid(num_rows, num_cols)
+        - Fill grid array of size num_rows by num_cols with num_rows*num_cols GridSpaces
+    - place_ship(location: (X: char, Y: int))
+        - Grid[X][Y]
+    - shoot(location: (X: char, Y: int)) -> bool:
+        - Grid[X][Y].hit()
