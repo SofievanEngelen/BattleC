@@ -10,9 +10,8 @@
 #include "Ship.h"
 
 class Board {
-
-    const std::pair<int, int> size {};
     std::vector< std::vector< GridSpace > > grid {}; //array??
+    const std::pair<int, int> size {};
     Ship ships[5] {Ship(5, "Carrier"),
                     Ship(4, "Battleship"),
                     Ship(3, "Cruiser"),
@@ -31,10 +30,12 @@ public:
     bool placeShip(Ship& ship, int row, int col, char orientation);
     // bool takeShot(const std::string& playerName, std::string strategy);
     bool shoot(int row, int col);
-    auto getShips() {return ships;}
+    auto& getShips() {return ships;}
     [[nodiscard]] auto getSize() const {return size;}
     [[nodiscard]] bool allShipsSunk() const {return std::all_of(std::begin(ships),std::end(ships),[] (const Ship &ship){ return ship.sunk;});}
     void display(bool ownership) const;
+    [[nodiscard]] std::string getRow(int rowNum, bool ownership) const;
+    std::vector< std::vector< GridSpace > > getGrid() {return grid;}
 };
 
 

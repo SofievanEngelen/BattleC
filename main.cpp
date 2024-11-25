@@ -9,16 +9,16 @@ void printResults(const Player& P1, const Player& P2) {
     else if (P2.hasLost()) {std::cout << "Player 1 wins!\n";}
 }
 
+int main() {
+    seedRandom(); // Ensure randomness is seeded globally
 
-int main()
-{
     constexpr std::pair boardSize{10, 10};
 
     const auto Board1 {Board(boardSize)};
     const auto Board2 {Board(boardSize)};
 
     auto Player1 {Player("Player 1", Board1)};
-    auto Player2 {AIPlayer("Player 2", Board2, "random", "random")};
+    auto Player2 {AIPlayer("Player 2", Board2, "hidden-pattern", "hunt-target")};
 
     Player1.setupShips();
     Player2.setupShips();

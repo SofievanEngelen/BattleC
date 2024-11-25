@@ -27,7 +27,8 @@ public:
 };
 
 class AIPlayer final : public Player {
-    std::vector<std::vector<int>> *heatmap{new std::vector(board.getSize().first, std::vector(board.getSize().second, 1))};
+    std::vector<std::vector<int>> *defenceHeatmap{new std::vector(board.getSize().first, std::vector(board.getSize().second, 1))};
+    std::vector<std::vector<int>> *offenceHeatmap{new std::vector(board.getSize().first, std::vector(board.getSize().second, 0))};
     std::string placementStrategy;
     std::string attackStrategy;
 
@@ -37,10 +38,9 @@ public:
         placementStrategy(std::move(defStrat)),
         attackStrategy(std::move(attStrat)){}
 
-    void setupShips() override {board.setup(placementStrategy, heatmap);}
+    void setupShips() override;
     void takeTurn(Player &opponent) const override;
 };
-
 
 
 #endif //PLAYER_H

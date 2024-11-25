@@ -11,31 +11,30 @@
 
 
 std::tuple<int, int, char> randomPlacement(const std::pair<int, int> &boardSize) {
-    return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1), (randomInt(0, 1) == 0) ? 'H' : 'V'};
+    return {
+        randomInt(0, boardSize.first - 1),
+        randomInt(0, boardSize.second - 1),
+        (randomInt(0, 1) == 0) ? 'H' : 'V'
+    };
 }
+
 
 std::vector<std::vector<bool>> generatePattern(const std::pair<int, int>& size, const std::string& patternType) {
     std::vector pattern(size.first, std::vector(size.second, false));
 
-    const auto it = patterns.find(patternType);
-    if (it == patterns.end()) {
-        std::cerr << "Unknown pattern type: " << patternType << std::endl;
-        return pattern; // Return an empty pattern or handle as needed
-    }
-
-    if (it->second == 1) {
+    if (patternType == "checkerboard") {
         for (int row = 0; row < size.first; ++row) {
             for (int col = 0; col < size.second; ++col) {
                 pattern[row][col] = (row + col) % 2 == 0;
             }
         }
-    } else if (it->second == 2) {
+    } else if (patternType == "edge-heavy") {
         for (int row = 0; row < size.first; ++row) {
             for (int col = 0; col < size.second; ++col) {
                 pattern[row][col] = (row == 0 || row == size.first - 1 || col == 0 || col == size.second - 1);
             }
         }
-    } else if (it->second == 3) {
+    } else if (patternType == "cross") {
         const int midRow = size.first / 2;
         const int midCol = size.second / 2;
         for (int row = 0; row < size.first; ++row) {
@@ -43,7 +42,9 @@ std::vector<std::vector<bool>> generatePattern(const std::pair<int, int>& size, 
                 pattern[row][col] = (row == midRow || col == midCol);
             }
         }
-    } else {std::cerr << "Unknown pattern type: " << patternType << std::endl;}
+    } else {
+        std::cerr << "Unknown pattern type: " << patternType << std::endl;
+    }
     return pattern;
 }
 
@@ -88,39 +89,41 @@ bool Board::placeShip(Ship &ship, const int row, const int col, const char orien
         return false;
     }
 }
-
 void Board::setup(const std::string& strategy, std::vector<std::vector<int>> *heatmap) {
+    std::cout << "Placement strategy: " << strategy << std::endl;
+
     switch (placementStrategies[strategy]) {
-        case 1:
+        case 1: // Manual placement
             std::cout << "The format of ship positions should be: start_coordinates orientation'\n "
-             "e.g. 'A1 H' will place the far end of the ship on A1 and continue down row 1.\n";
-            for (auto &ship : ships) {
-                while (true) {
-                    std::cout << "Where would you like to place your " << ship.ship_type << " (" << ship.ship_length << ")?\n";
+                         "e.g. 'A1 H' will place the far end of the ship on A1 and continue down row 1.\n";
+        for (auto &ship : ships) {
+            while (true) {
+                std::cout << "Where would you like to place your " << ship.ship_type << " (" << ship.ship_length << ")?\n";
 
-                    if (const auto [row, col, orient] {getPositionInputOrientation()}; !placeShip(ship, row, col, orient)) {continue;}
-                    break;
-                }
-                this->display(true);
+                if (const auto [row, col, orient] {getPositionInputOrientation()}; !placeShip(ship, row, col, orient)) {continue;}
+                break;
             }
+            this->display(true);
+        } break;
 
-        case 2:
+        case 2: // Random placement
             for (Ship& ship : ships) {
-                bool placed {false};
+                bool placed = false;
                 while (!placed) {
-                    const auto [row, col, orient] {randomPlacement(this->size)};
+                    const auto [row, col, orient] = randomPlacement(this->size);
                     placed = this->placeShip(ship, row, col, orient);
                 }
-            } break;
+            }
+        break;
 
-        case 3:
+        case 3: // Probability Density
             for (Ship& ship : ships) {
-                bool placed {false};
-                int attempts {0};
-                constexpr int maxAttempts {MAXATTEMPTS};
+                bool placed = false;
+                int attempts = 0;
+                constexpr int maxAttempts = MAXATTEMPTS;
 
                 while (!placed && attempts++ < maxAttempts) {
-                    const auto [row, col, orient] {randomPlacement(this->size)};
+                    const auto [row, col, orient] = randomPlacement(this->size);
 
                     if ((*heatmap)[row][col] <= 2 && this->placeShip(ship, row, col, orient)) {
                         placed = true;
@@ -129,36 +132,80 @@ void Board::setup(const std::string& strategy, std::vector<std::vector<int>> *he
                         for (int i = -1; i <= 1; ++i) {
                             for (int j = -1; j <= 1; ++j) {
                                 if (row + i >= 0 && row + i < size.first &&
-                                    col + j >= 0 && col + j < size.second)
-                                {(*heatmap)[row + i][col + j]++;}
+                                    col + j >= 0 && col + j < size.second) {
+                                    (*heatmap)[row + i][col + j]++;
+                                    }
                             }
                         }
                     }
                 }
-            } break;
+            }
+        break;
 
-        // case 4:
-        //     // Select random pattern
-        //     std::string pattern {patterns[rand() % std::size(patterns)]};
-        //     std::cout << pattern << '\n';
+        case 4: {
+            // Hidden Pattern
+            std::cout << "Using Hidden Pattern placement." << std::endl;
+
+            // Select a predefined pattern, e.g., checkerboard
+            auto pattern = generatePattern(this->size, "cross");
+
+            for (Ship& ship : ships) {
+                bool placed = false;
+
+                // Iterate through the pattern grid
+                for (int row = 0; row < size.first && !placed; ++row) {
+                    for (int col = 0; col < size.second && !placed; ++col) {
+                        if (pattern[row][col]) { // Place the ship on valid cells in the pattern
+                            if (placeShip(ship, row, col, 'H') || placeShip(ship, row, col, 'V')) {
+                                placed = true;
+                                std::cout << "Placed " << ship.ship_type << " at (" << row << ", " << col << ")." << std::endl;
+
+                                // Optionally clear the used pattern cells
+                                pattern[row][col] = false;
+                            }
+                        }
+                    }
+                }
+
+                if (!placed) {
+                    std::cerr << "Failed to place " << ship.ship_type << " using hidden pattern!" << std::endl;
+                }
+            }
+            break;
+        }
 
 
         default:
-            for (int i{0}; i<std::size(this->ships); i++) {
-                placeShip(ships[i], 0, 0+i, 'V');
+            for (int i{0}; i<std::size(ships); i++) {
+                placeShip(ships[i], 0, i, 'V');
             }
     }
 }
+
 
 
 bool Board::shoot(const int row, const int col) {
     return grid[row][col].markHit();
 }
 
+std::string Board::getRow(const int rowNum, const bool ownership) const {
+    std::string returnString;
+
+    for (int col{0}; col < size.second; col++) {
+        if (const Ship* ship{grid[rowNum][col].ship}; ship != nullptr && (ownership || ship->sunk)) {
+            returnString += shipIDs[ship->ship_type];
+        } else {returnString += grid[rowNum][col].displayValue;}
+        returnString += '\t';
+    }
+    return returnString;
+}
+
 void Board::display(const bool ownership) const {
-    std::cout << "\tA  " << "B  " << "C  " << "D  " << "E  " << "F  " << "G  " << "H  " << "I  " << "J" << std::endl;
+    std::cout << "Defence board:" << std::endl;
+    std::cout << "\tA  B  C  D  E  F  G  H  I  J" << std::endl;
     for (int row{0}; row < size.first; row++) {
-        std::cout << row+1 << '\t';
+        std::cout << row+1 << ".\t";
+
         for (int col{0}; col < size.second; col++) {
             if (ownership && grid[row][col].ship != nullptr) {
                 std::cout << 'S' << "  ";
@@ -167,3 +214,4 @@ void Board::display(const bool ownership) const {
         std::cout << std::endl;
     }
 }
+

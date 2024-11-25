@@ -18,11 +18,11 @@ struct Ship {
     bool markHit() {
         hits++;
         if (hits >= ship_length) {
-            std::cout << "You sank your opponent's " << ship_type << "!\n";
+            std::cout << "You sank your opponent's " << ship_type << "!\n\n";
             sunk = true;
             return true;
         }
-        std::cout << "You hit one of your opponent's ships!\n";
+        std::cout << "Hit!\n\n";
         return false;
     }
 };
