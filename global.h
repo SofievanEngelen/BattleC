@@ -67,13 +67,13 @@ inline void updateHeatmap(std::vector<std::vector<int>>& heatmap, const int row,
     }
 }
 
-enum patterns {
+enum class patterns {
     Checkerboard,
     EdgeHeavy,
     Cross
 };
 
-enum placementStrategies {
+enum class placementStrategies {
     Automatic,
     ManualInput,
     RandomPlacement,
@@ -81,7 +81,7 @@ enum placementStrategies {
     HiddenPattern
 };
 
-enum attackStrategies {
+enum class attackStrategies {
     RandomAttack,
     HuntTarget,
     Parity,

@@ -18,10 +18,10 @@ std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const at
     static std::vector probabilityMap(boardSize.first, std::vector(boardSize.second, 0));
 
     switch (strategy) {
-        case RandomAttack: { // Random Strategy
+        case attackStrategies::RandomAttack: { // Random Strategy
             return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1)};
         }
-        case HuntTarget: { // Hunt Target Strategy
+        case attackStrategies::HuntTarget: { // Hunt Target Strategy
             if (!targetQueue.empty()) {
                 // Pick the next target from the queue
                 auto nextTarget = targetQueue.back();
@@ -31,7 +31,7 @@ std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const at
             // Fallback to random if the queue is empty
             return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1)};
         }
-        case Parity: { // Parity Strategy
+        case attackStrategies::Parity: { // Parity Strategy
             int row, col;
             do {
                 row = randomInt(0, boardSize.first - 1);
@@ -39,7 +39,7 @@ std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const at
             } while ((row + col) % 2 != 0); // Ensure checkerboard pattern
             return {row, col};
         }
-        case ProbabilityDensityAttack: { // Probability Density Strategy
+        case attackStrategies::ProbabilityDensityAttack: { // Probability Density Strategy
             // Calculate the maximum value in the probability map
             int maxProb = 0;
             std::vector<std::pair<int, int>> candidates;
@@ -89,7 +89,7 @@ void AIPlayer::takeTurn(Player &opponent) const {
         std::cout << "The AI chose to hit " << static_cast<char>('A' + col) << row + 1 << "!" << std::endl;
         if (opponent.getBoard().shoot(row, col)) {
             // If the attack hits, add adjacent cells to the target queue (for Hunt Target)
-            if (this->attackStrategy == HuntTarget) {
+            if (this->attackStrategy == attackStrategies::HuntTarget) {
                 for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}) {
                     int newRow = row + dx;
                     int newCol = col + dy;
@@ -106,10 +106,12 @@ void AIPlayer::takeTurn(Player &opponent) const {
     displayBoards(this->board, opponent.getBoard());
 }
 
+bool operator==(placementStrategies lhs, attackStrategies rhs);
+
 void AIPlayer::setupShips() {
     board.setup(placementStrategy, defenceHeatmap);
 
-    if (placementStrategy == ProbabilityDensityPlacement) {
+    if (placementStrategy == placementStrategies::ProbabilityDensityPlacement) {
         for (int i = 0; i < board.getSize().first; ++i) {
             for (int j = 0; j < board.getSize().second; ++j) {
                 defenceHeatmap->at(i)[j] = std::min({i, j, board.getSize().first - 1 - i,

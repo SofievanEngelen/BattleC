@@ -24,21 +24,21 @@ std::vector<std::vector<bool>> generatePattern(const std::pair<int, int>& size, 
     std::vector pattern(size.first, std::vector(size.second, false));
 
     switch (patternType) {
-        case Checkerboard:
+        case patterns::Checkerboard:
             for (int row = 0; row < size.first; ++row) {
                 for (int col = 0; col < size.second; ++col) {
                     pattern[row][col] = (row + col) % 2 == 0;
                 }
             } break;
 
-        case EdgeHeavy:
+        case patterns::EdgeHeavy:
             for (int row = 0; row < size.first; ++row) {
                 for (int col = 0; col < size.second; ++col) {
                     pattern[row][col] = (row == 0 || row == size.first - 1 || col == 0 || col == size.second - 1);
                 }
             } break;
 
-        case Cross: {
+        case patterns::Cross: {
             const int midRow = size.first / 2;
             const int midCol = size.second / 2;
             for (int row = 0; row < size.first; ++row) {
@@ -49,7 +49,7 @@ std::vector<std::vector<bool>> generatePattern(const std::pair<int, int>& size, 
         }
 
         default:
-            std::cerr << "Unknown pattern type: " << patternType << std::endl;
+            std::cerr << "Unknown pattern type";
     }
     return pattern;
 }
@@ -58,7 +58,7 @@ std::vector<std::vector<bool>> generatePattern(const std::pair<int, int>& size, 
 bool Board::placeShip(Ship &ship, const int row, const int col, const char orientation, const bool feedback) {
     switch (orientation) {
         case 'V':
-            for (int i{0}; i < ship.ship_length; i++) {
+            for (int i{0}; i < ship.getLength(); i++) {
                 if (0 > row+i || row+i > this->size.first-1 || 0 > col || col > this->size.second-1) {
                     if (feedback) {std::cout << "Ship goes out of bounds, try again." << std::endl;}
                     return false;
@@ -69,12 +69,12 @@ bool Board::placeShip(Ship &ship, const int row, const int col, const char orien
                 }
             }
 
-            for (int i{0}; i < ship.ship_length; i++) {
+            for (int i{0}; i < ship.getLength(); i++) {
                 grid[row+i][col].ship = &ship;}
         return true;
 
         case 'H':
-            for (int i{0}; i < ship.ship_length; i++) {
+            for (int i{0}; i < ship.getLength(); i++) {
                 if (0 > row || row > this->size.first-1 || 0 > col+i || col+i > this->size.second-1) {
                     if (feedback) {std::cout << "Ship goes out of bounds, try again." << std::endl;}
                     return false;
@@ -86,7 +86,7 @@ bool Board::placeShip(Ship &ship, const int row, const int col, const char orien
 
             }
 
-        for (int i{0}; i < ship.ship_length; i++) {
+        for (int i{0}; i < ship.getLength(); i++) {
             grid[row][col+i].ship = &ship;}
         return true;
 
@@ -99,12 +99,12 @@ bool Board::placeShip(Ship &ship, const int row, const int col, const char orien
 void Board::setup(const placementStrategies strategy, std::vector<std::vector<int>> *heatmap) {
 
     switch (strategy) {
-        case ManualInput: // Manual placement
+        case placementStrategies::ManualInput: // Manual placement
             for (auto &ship : ships) {
                 while (true) {
                     std::cout << "Format: start_coordinates orientation'\n "
                          "e.g. 'A1 H' will place the far end of the ship on A1 and continue down row 1.\n";
-                    std::cout << "Where would you like to place your " << ship.ship_type << " (" << ship.ship_length << ")?\n";
+                    std::cout << "Where would you like to place your " << ship.getType() << " (" << ship.getLength() << ")?\n";
 
                     if (const auto [row, col, orient] {getPositionInputOrientation()}; !placeShip(ship, row, col, orient, true)) {continue;}
                     break;
@@ -112,7 +112,7 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
                 this->display(true);
             } break;
 
-        case RandomPlacement: // Random placement
+        case placementStrategies::RandomPlacement: // Random placement
             for (Ship& ship : ships) {
                 bool placed = false;
                 while (!placed) {
@@ -121,7 +121,7 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
                 }
             } break;
 
-        case ProbabilityDensityPlacement: // Probability Density
+        case placementStrategies::ProbabilityDensityPlacement: // Probability Density
         {
             for (Ship& ship : ships) {
                 bool placed = false;
@@ -142,10 +142,10 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
         }
 
 
-        case HiddenPattern: // Hidden Pattern placement
+        case placementStrategies::HiddenPattern: // Hidden Pattern placement
         {
             // Generate a predefined pattern, e.g., a checkerboard or cross pattern
-            auto pattern = generatePattern(this->size, Cross);
+            auto pattern = generatePattern(this->size, patterns::Cross);
 
             for (Ship& ship : ships) {
                 bool placed = false;
@@ -159,36 +159,36 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
                                 placed = true;
 
                                 // Log the successful placement
-                                std::cout << "Placed " << ship.ship_type << " at (" << row << ", " << col << ")." << std::endl;
+                                std::cout << "Placed " << ship.getType() << " at (" << row << ", " << col << ")." << std::endl;
 
                                 // Mark the cell as used in the pattern (optional, depends on use case)
                                 pattern[row][col] = false; }}}}
 
                 // Log an error if placement failed
                 if (!placed) {
-                    std::cerr << "Failed to place " << ship.ship_type << " using hidden pattern!" << std::endl;
+                    std::cerr << "Failed to place " << ship.getType() << " using hidden pattern!" << std::endl;
                 }
             }
             break;
         }
 
 
-        case Automatic:
+        case placementStrategies::Automatic:
             default:
             for (int i{0}; i<std::size(ships); i++) {placeShip(ships[i], 0, i, 'V', false);}
     }
 }
 
 bool Board::shoot(const int row, const int col) {
-    return grid[row][col].markHit();
+    return grid[row][col].markHit(true);
 }
 
 std::string Board::getRow(const int rowNum, const bool ownership) const {
     std::string returnString;
 
     for (int col{0}; col < size.second; col++) {
-        if (const Ship* ship{grid[rowNum][col].ship}; ship != nullptr && (ownership || ship->sunk)) {
-            returnString += shipIDs[ship->ship_type];
+        if (const Ship* ship{grid[rowNum][col].ship}; ship != nullptr && (ownership || ship->isSunk())) {
+            returnString += shipIDs[ship->getType()];
         } else {returnString += grid[rowNum][col].displayValue;}
         returnString += '\t';
     }
@@ -197,14 +197,14 @@ std::string Board::getRow(const int rowNum, const bool ownership) const {
 
 void Board::display(const bool ownership) const {
     std::cout << "Defence board:" << std::endl;
-    std::cout << "\tA  B  C  D  E  F  G  H  I  J" << std::endl;
+    std::cout << "\tA\tB\tC\tD\tE\tF\tG\tH\tI\tJ" << std::endl;
     for (int row{0}; row < size.first; row++) {
         std::cout << row+1 << ".\t";
 
         for (int col{0}; col < size.second; col++) {
             if (ownership && grid[row][col].ship != nullptr) {
-                std::cout << shipIDs[grid[row][col].ship->ship_type] << "  ";
-            } else {std::cout << grid[row][col].displayValue << "  ";}
+                std::cout << shipIDs[grid[row][col].ship->getType()] << '\t';
+            } else {std::cout << grid[row][col].displayValue << '\t';}
         }
         std::cout << std::endl;
     }
