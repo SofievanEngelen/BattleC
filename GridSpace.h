@@ -13,9 +13,9 @@ struct GridSpace {
     char displayValue{'.'};
 
     // Return boolean -> end of turn?
-    bool markHit() {
+    bool markHit(const bool feedback) {
         if (hit) {
-            std::cout << "You already hit that spot, try again!\n\n";
+            if (feedback) {std::cout << "You already hit that spot, try again!" << std::endl;}
             return false;
         }
         hit = true; // print hit
@@ -26,7 +26,7 @@ struct GridSpace {
             return ship->markHit();
         }
 
-        std::cout << "Miss!\n";
+        std::cout << "Miss!" << std::endl;
         displayValue = 'O';
         return true;
     }

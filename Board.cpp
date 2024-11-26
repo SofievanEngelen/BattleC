@@ -100,10 +100,10 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
 
     switch (strategy) {
         case ManualInput: // Manual placement
-            std::cout << "The format of ship positions should be: start_coordinates orientation'\n "
-                         "e.g. 'A1 H' will place the far end of the ship on A1 and continue down row 1.\n";
             for (auto &ship : ships) {
                 while (true) {
+                    std::cout << "Format: start_coordinates orientation'\n "
+                         "e.g. 'A1 H' will place the far end of the ship on A1 and continue down row 1.\n";
                     std::cout << "Where would you like to place your " << ship.ship_type << " (" << ship.ship_length << ")?\n";
 
                     if (const auto [row, col, orient] {getPositionInputOrientation()}; !placeShip(ship, row, col, orient, true)) {continue;}
@@ -122,65 +122,60 @@ void Board::setup(const placementStrategies strategy, std::vector<std::vector<in
             } break;
 
         case ProbabilityDensityPlacement: // Probability Density
+        {
             for (Ship& ship : ships) {
                 bool placed = false;
                 int attempts = 0;
                 constexpr int maxAttempts = MAXATTEMPTS;
 
                 while (!placed && attempts++ < maxAttempts) {
-                    const auto [row, col, orient] = randomPlacement(this->size);
-                    if ((*heatmap)[row][col] <= 2 && this->placeShip(ship, row, col, orient, false)) {
+                    // Attempt to place the ship if the heatmap value allows
+                    if (const auto [row, col, orient] = randomPlacement(this->size);
+                        (*heatmap)[row][col] <= 2 && this->placeShip(ship, row, col, orient, false)) {
                         placed = true;
 
-                        // Update heatmap around placed ship
-                        for (int i = -1; i <= 1; ++i) {
-                            for (int j = -1; j <= 1; ++j) {
-                                if (row + i >= 0 && row + i < size.first &&
-                                    col + j >= 0 && col + j < size.second) {
-                                    (*heatmap)[row + i][col + j]++;
-                                    }
-                            }
-                        }
-                    }
-                }
-            } break;
+                        // Update the heatmap around the placed ship
+                        for (int i = std::max(0, row - 1); i <= std::min(size.first - 1, row + 1); ++i) {
+                            for (int j = std::max(0, col - 1); j <= std::min(size.second - 1, col + 1); ++j) {
+                                (*heatmap)[i][j]++;}}}}}
+            break;
+        }
 
-        case HiddenPattern: {
-            // Hidden Pattern
-            std::cout << "Using Hidden Pattern placement." << std::endl;
 
-            // Select a predefined pattern, e.g., checkerboard
+        case HiddenPattern: // Hidden Pattern placement
+        {
+            // Generate a predefined pattern, e.g., a checkerboard or cross pattern
             auto pattern = generatePattern(this->size, Cross);
 
             for (Ship& ship : ships) {
                 bool placed = false;
 
-                // Iterate through the pattern grid
+                // Iterate through the pattern grid to find a valid placement
                 for (int row = 0; row < size.first && !placed; ++row) {
                     for (int col = 0; col < size.second && !placed; ++col) {
-                        if (pattern[row][col]) { // Place the ship on valid cells in the pattern
+                        if (pattern[row][col]) { // Check if the cell is valid in the pattern
+                            // Try placing the ship horizontally or vertically
                             if (placeShip(ship, row, col, 'H', false) || placeShip(ship, row, col, 'V', false)) {
                                 placed = true;
+
+                                // Log the successful placement
                                 std::cout << "Placed " << ship.ship_type << " at (" << row << ", " << col << ")." << std::endl;
 
-                                // Optionally clear the used pattern cells
-                                pattern[row][col] = false;
-                            }
-                        }
-                    }
-                }
+                                // Mark the cell as used in the pattern (optional, depends on use case)
+                                pattern[row][col] = false; }}}}
 
+                // Log an error if placement failed
                 if (!placed) {
                     std::cerr << "Failed to place " << ship.ship_type << " using hidden pattern!" << std::endl;
                 }
-            } break;
+            }
+            break;
         }
+
 
         case Automatic:
             default:
-            for (int i{0}; i<std::size(ships); i++) {
-                placeShip(ships[i], 0, i, 'V', false);
-            }
+            for (int i{0}; i<std::size(ships); i++) {placeShip(ships[i], 0, i, 'V', false);}
     }
 }
 

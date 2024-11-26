@@ -55,7 +55,7 @@ inline constexpr int MAXATTEMPTS {1000};
 
 inline std::unordered_map<std::string, char> shipIDs{{"Carrier", '1'}, {"Battleship", '2'}, {"Cruiser", '3'}, {"Submarine", '4'}, {"Destroyer", '5'}};
 
-inline void updateHeatmap(std::vector<std::vector<int>>& heatmap, int row, int col) {
+inline void updateHeatmap(std::vector<std::vector<int>>& heatmap, const int row, const int col) {
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
             const int newRow = row + i;

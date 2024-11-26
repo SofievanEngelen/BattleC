@@ -31,5 +31,3 @@ int main() {
     printResults(Player1, Player2);
 }
 
-
-
