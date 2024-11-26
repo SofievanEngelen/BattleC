@@ -7,12 +7,19 @@
 #include <iostream>
 #include <string>
 
-struct Ship {
+class Ship {
+
     const int ship_length;
     const std::string ship_type;
     int hits{0};
     bool sunk{false};
+
+public:
     Ship(const int length, std::string type) : ship_length(length), ship_type(std::move(type)) {}
+
+    [[nodiscard]] bool isSunk() const { return sunk; }
+    [[nodiscard]] bool getLength() const { return ship_length; }
+    [[nodiscard]] std::string getType() const { return ship_type; }
 
     // Return if the ship sank
     bool markHit() {
