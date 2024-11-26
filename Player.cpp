@@ -13,11 +13,11 @@ void displayBoards(const Board& defenceBoard, const Board &offenceBoard) {
     }
 }
 
-std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const std::string &strategy) {
+std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const attackStrategies strategy) {
     static std::vector<std::pair<int, int>> targetQueue; // Queue for Hunt Target strategy
-    static std::vector<std::vector<int>> probabilityMap(boardSize.first, std::vector<int>(boardSize.second, 0));
+    static std::vector probabilityMap(boardSize.first, std::vector(boardSize.second, 0));
 
-    switch (attackStrategies[strategy]) {
+    switch (strategy) {
         case 1: { // Random Strategy
             return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1)};
         }
@@ -27,10 +27,9 @@ std::tuple<int, int> pickNextMove(const std::pair<int, int> &boardSize, const st
                 auto nextTarget = targetQueue.back();
                 targetQueue.pop_back();
                 return nextTarget;
-            } else {
-                // Fallback to random if the queue is empty
-                return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1)};
             }
+            // Fallback to random if the queue is empty
+            return {randomInt(0, boardSize.first - 1), randomInt(0, boardSize.second - 1)};
         }
         case 3: { // Parity Strategy
             int row, col;
@@ -90,7 +89,7 @@ void AIPlayer::takeTurn(Player &opponent) const {
         std::cout << "The AI chose to hit " << static_cast<char>('A' + col) << row + 1 << "!" << std::endl;
         if (opponent.getBoard().shoot(row, col)) {
             // If the attack hits, add adjacent cells to the target queue (for Hunt Target)
-            if (this->attackStrategy == "hunt-target") {
+            if (this->attackStrategy == HuntTarget) {
                 for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}) {
                     int newRow = row + dx;
                     int newCol = col + dy;
@@ -110,7 +109,7 @@ void AIPlayer::takeTurn(Player &opponent) const {
 void AIPlayer::setupShips() {
     board.setup(placementStrategy, defenceHeatmap);
 
-    if (placementStrategy == "prob-density") {
+    if (placementStrategy == ProbabilityDensityPlacement) {
         for (int i = 0; i < board.getSize().first; ++i) {
             for (int j = 0; j < board.getSize().second; ++j) {
                 // Example initialization: Center positions have higher probabilities

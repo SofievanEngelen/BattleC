@@ -52,14 +52,6 @@ inline std::tuple<int, int, char> getPositionInputOrientation() {
 
 inline int moves {0};
 inline constexpr int MAXATTEMPTS {1000};
-inline std::unordered_map<std::string, int> patterns{{"checkerboard", 1}, {"edge-heavy", 2},{"cross", 3}};
-inline std::unordered_map<std::string, int> placementStrategies{{"input", 1},{"random", 2},{"prob-density", 3},{"hidden-pattern", 4}};
-inline std::unordered_map<std::string, int> attackStrategies{
-        {"random", 1},
-        {"prob-density", 2},
-        {"hidden-pattern", 3},
-        {"hunt-target", 4}
-};
 
 inline std::unordered_map<std::string, char> shipIDs{{"Carrier", '1'}, {"Battleship", '2'}, {"Cruiser", '3'}, {"Submarine", '4'}, {"Destroyer", '5'}};
 
@@ -67,12 +59,33 @@ inline void updateHeatmap(std::vector<std::vector<int>>& heatmap, int row, int c
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
             const int newRow = row + i;
-            if (int newCol = col + j; newRow >= 0 && newRow < heatmap.size() &&
-                                      newCol >= 0 && newCol < heatmap[0].size()) {
+            if (const int newCol = col + j; newRow >= 0 && newRow < heatmap.size() &&
+                                            newCol >= 0 && newCol < heatmap[0].size()) {
                 heatmap[newRow][newCol]++;
                 }
         }
     }
 }
+
+enum patterns {
+    Checkerboard,
+    EdgeHeavy,
+    Cross
+};
+
+enum placementStrategies {
+    Automatic,
+    ManualInput,
+    RandomPlacement,
+    ProbabilityDensityPlacement,
+    HiddenPattern
+};
+
+enum attackStrategies {
+    RandomAttack,
+    HuntTarget,
+    Parity,
+    ProbabilityDensityAttack
+};
 
 #endif //GLOBAL_H

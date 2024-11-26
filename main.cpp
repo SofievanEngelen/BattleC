@@ -18,7 +18,7 @@ int main() {
     const auto Board2 {Board(boardSize)};
 
     auto Player1 {Player("Player 1", Board1)};
-    auto Player2 {AIPlayer("Player 2", Board2, "hidden-pattern", "hunt-target")};
+    auto Player2 {AIPlayer("Player 2", Board2, RandomPlacement, HuntTarget)};
 
     Player1.setupShips();
     Player2.setupShips();
@@ -30,3 +30,6 @@ int main() {
 
     printResults(Player1, Player2);
 }
+
+
+

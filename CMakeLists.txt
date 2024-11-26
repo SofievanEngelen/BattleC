@@ -11,5 +11,4 @@ add_executable(BattleC main.cpp
         Player.h
         GridSpace.h
         global.h
-        Strategy.cpp
-        Strategy.h)
+)

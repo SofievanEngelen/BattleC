@@ -26,7 +26,7 @@ struct GridSpace {
             return ship->markHit();
         }
 
-        std::cout << "Miss!\n\n";
+        std::cout << "Miss!\n";
         displayValue = 'O';
         return true;
     }

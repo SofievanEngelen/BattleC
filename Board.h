@@ -26,8 +26,8 @@ class Board {
 public:
     explicit Board(const std::pair<int, int> &size) : size(size), grid(size.first, std::vector(size.second, GridSpace())) {}
 
-    void setup(const std::string& strategy, std::vector<std::vector<int>> *heatmap);
-    bool placeShip(Ship& ship, int row, int col, char orientation);
+    void setup(placementStrategies strategy, std::vector<std::vector<int>> *heatmap);
+    bool placeShip(Ship& ship, int row, int col, char orientation, bool feedback);
     // bool takeShot(const std::string& playerName, std::string strategy);
     bool shoot(int row, int col);
     auto& getShips() {return ships;}
