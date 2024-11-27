@@ -21,7 +21,7 @@ public:
 
     Player(std::string playerName, Board board) : name(std::move(playerName)), board(std::move(board)) {}
 
-    virtual void setupShips() {board.setup(ManualInput, nullptr);}
+    virtual void setupShips() {board.setup(placementStrategies::Automatic, nullptr);}
     virtual void takeTurn(Player &opponent) const;
     [[nodiscard]] bool hasLost() const {return board.allShipsSunk(); }
     Board& getBoard() {return board;}

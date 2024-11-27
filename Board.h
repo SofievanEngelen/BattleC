@@ -32,7 +32,7 @@ public:
     bool shoot(int row, int col);
     auto& getShips() {return ships;}
     [[nodiscard]] auto getSize() const {return size;}
-    [[nodiscard]] bool allShipsSunk() const {return std::all_of(std::begin(ships),std::end(ships),[] (const Ship &ship){ return ship.sunk;});}
+    [[nodiscard]] bool allShipsSunk() const {return std::all_of(std::begin(ships),std::end(ships),[] (const Ship &ship){ return ship.isSunk();});}
     void display(bool ownership) const;
     [[nodiscard]] std::string getRow(int rowNum, bool ownership) const;
     std::vector< std::vector< GridSpace > > getGrid() {return grid;}
